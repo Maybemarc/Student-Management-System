@@ -1,6 +1,7 @@
 import User from "../models/userSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import sendMail from "../utils/sendMail.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -54,7 +55,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid Crenditials" });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "10d",
     });
 
@@ -65,16 +66,14 @@ export const login = async (req, res) => {
       maxAge: 10 * 24 * 60 * 60 * 1000,
     });
 
-    res
-      .status(200)
-      .json({
-        message: "Login Successfull",
-        user: {
-          fullName: user.fullName,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        },
-      });
+    res.status(200).json({
+      message: "Login Successfull",
+      user: {
+        fullName: user.fullName,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -83,4 +82,66 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("token");
   res.status(200).json({ message: "Logged Out Successfully" });
+};
+
+export const forgetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    await sendMail(
+      email,
+      "password Reset Request",
+      `<a href="http://localhost:5173/reset-password/${resetToken}">here</a>`
+    );
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword)
+      return res.status(400).json({
+        message: "Token and new password is required",
+      });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const response = await User.findById(decoded.id);
+    if (!response)
+      return res.status(404).json({ message: "User doesn't exist" });
+
+    response.password = await bcrypt.hash(newPassword, 10);
+
+    await response.save();
+
+    res.status(200).json({ message: "Password reset Successfully" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server Error",
+      error: error.message,
+    });
+  }
 };
