@@ -39,6 +39,7 @@ export const registerUser = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    console.log(req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res
@@ -76,6 +77,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(`Error in login: `,error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
