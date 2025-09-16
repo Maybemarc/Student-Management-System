@@ -35,13 +35,23 @@ function StudentList() {
   };
 
   if (isLoading) return <div>Loading students...</div>;
-  if (!list || list.length === 0) return <div>No students found.</div>;
+    const studentsList = Array.isArray(list) ? list : [];
+
+  if (studentsList.length === 0) {
+    return (
+      <div>
+        <p>Number of Students found - {total || 0}</p>
+        <StudentSearch onSearch={handleSearch} />
+        <div>No students found.</div>
+      </div>
+    );
+  }
 
   return (
     <div>
         <p>Number of Students found - {total}</p>
       <StudentSearch onSearch={handleSearch} />
-      <StudentResults students={list} onDelete={handleDelete}  />
+      <StudentResults students={studentsList} onDelete={handleDelete}  />
 
       <div className="pagination">
   <button disabled={page <= 1} onClick={handlePrevPage}>

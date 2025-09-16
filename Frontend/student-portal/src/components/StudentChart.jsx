@@ -24,10 +24,18 @@ function StudentSummaryChart(){
   if (isLoading) return <p>Loading chart...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const chartData = summary.labels.map((label, index) => ({
+  const labels = Array.isArray(summary?.labels) ? summary.labels : [];
+  const counts = Array.isArray(summary?.counts)
+    ? summary.counts
+    : Array.isArray(summary?.count)
+    ? summary.count
+    : [];
+
+   const chartData = labels.map((label, index) => ({
     year: label,
-    count: summary.counts[index] || 0,
+    count: counts[index] || 0,
   }));
+
 
   return (
     <div style={{ width: "100%", height: 400 }}>

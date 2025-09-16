@@ -6,7 +6,7 @@ const initialState = {
   total: 0,
   page: 1,
   pages: 1,
-  summary: { labels: [], count: [], summary: [] },
+  summary: { labels: [], count: [] },
   selectedStudent: null,
   isLoading: false,
   error: null,
@@ -155,11 +155,11 @@ const studentSlice = createSlice({
         state.isLoading = false;
         const index = state.list.findIndex((s) => s._id === action.payload._id);
         if (index !== -1) state.list[index] = action.payload;
-        state.selectedStudent = action.payload
+        state.selectedStudent = action.payload;
       })
       .addCase(updateStudent.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Something went wrong in update" ;
+        state.error = action.payload || "Something went wrong in update";
       })
 
       //Delete a student
@@ -189,7 +189,15 @@ const studentSlice = createSlice({
       })
       .addCase(fetchStudentSummary.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        const payload = action.payload || {};
+        state.summary = {
+          labels: Array.isArray(payload.labels) ? payload.labels : [],
+          counts: Array.isArray(payload.counts)
+            ? payload.counts
+            : Array.isArray(payload.count)
+            ? payload.count
+            : [],
+        };
       });
   },
 });

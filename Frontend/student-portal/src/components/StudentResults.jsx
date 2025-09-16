@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 function StudentResults({students,onDelete}) {
   const navigate =useNavigate()
 
-  if (!students || students.length === 0) return <div>No results found.</div>;
+  if (!Array.isArray(students) || students.length === 0) return <div>No results found.</div>;
 
   return (
      <div className="results-container">
