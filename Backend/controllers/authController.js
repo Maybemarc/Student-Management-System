@@ -121,7 +121,7 @@ export const forgetPassword = async (req, res) => {
     });
 
     const emailHtml = passwordResetTemplate(
-      `http://localhost:5173/reset-password/${resetToken}`
+      `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
     );
 
     await sendMail(
