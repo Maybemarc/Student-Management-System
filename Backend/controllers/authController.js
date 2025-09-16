@@ -2,7 +2,10 @@ import User from "../models/userSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import sendMail from "../utils/sendMail.js";
-import passwordResetTemplate from "../utils/ResetPAsswordTemplate.js"
+import passwordResetTemplate from "../utils/ResetPAsswordTemplate.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const registerUser = async (req, res) => {
   try {
@@ -57,9 +60,18 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid Crenditials" });
     }
 
-    const token = jwt.sign({ id: user._id ,  isAdmin: user.isAdmin}, process.env.JWT_SECRET, {
-      expiresIn: "10d",
-    });
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined!");
+      return res.status(500).json({ message: "Server misconfiguration" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "10d",
+      }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -77,7 +89,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(`Error in login: `,error);
+    console.log(`Error in login: `, error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
@@ -108,7 +120,9 @@ export const forgetPassword = async (req, res) => {
       expiresIn: "15m",
     });
 
-    const emailHtml = passwordResetTemplate(`http://localhost:5173/reset-password/${resetToken}`)
+    const emailHtml = passwordResetTemplate(
+      `http://localhost:5173/reset-password/${resetToken}`
+    );
 
     await sendMail(
       email,
