@@ -65,10 +65,8 @@ export const createStudent = async (req, res) => {
       });
     }
 
-    if (req.file) {
       const uploadResult = await uploadCloudinary(req.file.buffer);
       photoUrl = uploadResult.secure_url;
-    }
 
     const student = await Student.create({
       fullName,
@@ -86,6 +84,7 @@ export const createStudent = async (req, res) => {
 
     res.status(201).json({ message: "Student created", student });
   } catch (error) {
+    console.log(`Error in creating User: `,error);
     return res.status(500).json({
       message: "Server Error",
       error: error.message,
@@ -179,12 +178,16 @@ export const deleteStudent = async (req, res) => {
 
 export const getAllStudents = async (req, res) => {
   try {
-    const { name, rollNumber, studentClass, page = 1, limit = 10 } = req.query;
+    const { search, page = 1, limit = 10 } = req.query;
 
     const query = {};
-    if (name) query.fullName = { $regex: name, $options: "i" };
-    if (rollNumber) query.rollNumber = rollNumber;
-    if (studentClass) query.studentClass = { $regex: studentClass, $options: "i" };
+    if(search){
+      query.$or = [
+        { fullName: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } },
+        { studentClass: { $regex: search, $options: "i" } }
+      ];
+    }
 
     const skip = (page - 1) * limit;
 
@@ -195,7 +198,7 @@ export const getAllStudents = async (req, res) => {
 
     const total = await Student.countDocuments(query);
 
-    if(!total){
+    if(!total || total === 0){
       return res.status(400).json({message:"No student found"})
     }
 

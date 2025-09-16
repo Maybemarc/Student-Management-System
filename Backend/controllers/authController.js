@@ -2,6 +2,7 @@ import User from "../models/userSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import sendMail from "../utils/sendMail.js";
+import passwordResetTemplate from "../utils/ResetPAsswordTemplate.js"
 
 export const registerUser = async (req, res) => {
   try {
@@ -55,7 +56,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid Crenditials" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id ,  isAdmin: user.isAdmin}, process.env.JWT_SECRET, {
       expiresIn: "10d",
     });
 
@@ -105,10 +106,14 @@ export const forgetPassword = async (req, res) => {
       expiresIn: "15m",
     });
 
+    const emailHtml = passwordResetTemplate(`http://localhost:5173/reset-password/${resetToken}`)
+
     await sendMail(
       email,
       "password Reset Request",
-      `<a href="http://localhost:5173/reset-password/${resetToken}">here</a>`
+      emailHtml
+
+      // `<a href="http://localhost:5173/reset-password/${resetToken}">here</a>`
     );
 
     res.status(200).json({ message: "Password reset email sent" });
@@ -144,4 +149,8 @@ export const resetPassword = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export const getMe = async (req, res) => {
+  res.status(200).json({ user: req.user });
 };
