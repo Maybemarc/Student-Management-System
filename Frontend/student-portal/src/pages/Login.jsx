@@ -25,7 +25,7 @@ function Login() {
     try {
       const response = await dispatch(loginUser({ email, password }));
       if (loginUser.fulfilled.match(response)) {
-        dispatch(fetchCurrentUser());
+        await dispatch(fetchCurrentUser());
         alert("Login Success");
         navigate("/students");
       }
