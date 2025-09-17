@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchStudents, deleteStudent } from "../redux/studentSlice";
 import StudentSearch from "./StudentSearch"
 import StudentResults from "./StudentResults"
+import { Link } from "react-router-dom";
 
 function StudentList() {
   const dispatch = useDispatch();
@@ -40,17 +41,16 @@ function StudentList() {
   if (studentsList.length === 0) {
     return (
       <div>
-        <p>Number of Students found - {total || 0}</p>
-        <StudentSearch onSearch={handleSearch} />
         <div>No students found.</div>
+        <Link to='/create-student' >
+        +
+        </Link>
       </div>
     );
   }
 
   return (
     <div>
-        <p>Number of Students found - {total}</p>
-      <StudentSearch onSearch={handleSearch} />
       <StudentResults students={studentsList} onDelete={handleDelete}  />
 
       <div className="pagination">

@@ -12,11 +12,6 @@ function HomePage() {
       <Link to="/students">
         <p> Get the students</p>
       </Link>
-
-      <div>
-        <StudentChart />
-
-      </div>
     </div>
   );
 }

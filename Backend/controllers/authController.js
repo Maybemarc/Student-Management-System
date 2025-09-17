@@ -9,7 +9,7 @@ dotenv.config();
 
 export const registerUser = async (req, res) => {
   try {
-    const { fullName, email, password, phoneNumber, address, isAdmin } =
+    const { fullName, email, password, phoneNumber, address,isAdmin } =
       req.body;
 
     if (!fullName || !email || !password || !phoneNumber || !address) {
@@ -29,7 +29,7 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
       phoneNumber,
       address,
-      isAdmin: isAdmin || false,
+      isAdmin:isAdmin || true,
     });
 
     await newUser.save();
@@ -42,7 +42,6 @@ export const registerUser = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log(req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res

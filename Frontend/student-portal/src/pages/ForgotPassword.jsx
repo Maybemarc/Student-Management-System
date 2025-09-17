@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { forgotPassword } from "../redux/authSlice";
+import { toast } from "react-hot-toast";
 
 function ForgotPassword() {
   const dispatch = useDispatch();
-  const { isLoading } = useSelector((state) => state.auth);
+  const { isLoading, error } = useSelector((state) => state.auth);
 
   const [email, setEmail] = useState("");
 
@@ -17,13 +18,19 @@ function ForgotPassword() {
     if (!email) return;
 
     try {
-      await dispatch(forgotPassword(email));
-      alert("Reset email sent!");
+      await dispatch(forgotPassword(email)).unwrap();
+      toast.success("Reset email sent!");
       setEmail("");
-    } catch (error) {
-      console.log("Error in forgot-password:", error.message);
+    } catch (err) {
+      console.log("Forgot-password error:", err);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message || "Invalid credentials");
+    }
+  }, [error]);
 
   return (
     <div className="forgot-container">

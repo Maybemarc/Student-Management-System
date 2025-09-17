@@ -170,6 +170,8 @@ const authSlice = createSlice({
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.isLoading = false;
+        state.user = null;
+        Cookies.remove("user")
         state.error = action.payload;
       });
   },

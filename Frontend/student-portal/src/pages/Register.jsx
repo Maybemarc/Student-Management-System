@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { registerUser, resetError } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../redux/authSlice";
+import { toast } from "react-hot-toast";
 
 function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading } = useSelector((state) => state.auth);
+  const { isLoading, error } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -16,42 +17,87 @@ function Register() {
     address: "",
   });
 
+  const [errors, setErrors] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+    address: "",
+  });
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === "fullName") setErrors(prev => ({ ...prev, fullName: value ? "" : "Full Name is required" }));
+    if (name === "email") setErrors(prev => ({ ...prev, email: /\S+@\S+\.\S+/.test(value) ? "" : "Invalid email address" }));
+    if (name === "password") setErrors(prev => ({ ...prev, password: value.length >= 8 ? "" : "Password must be at least 8 characters" }));
+    if (name === "phoneNumber") setErrors(prev => ({ ...prev, phoneNumber: /^[0-9]{10}$/.test(value) ? "" : "Phone number must be 10 digits" }));
+    if (name === "address") setErrors(prev => ({ ...prev, address: value ? "" : "Address is required" }));
   };
 
   const validateForm = () => {
-    if (!formData.fullName || !formData.password || !formData.email) return false;
-    if (!/\S+@\S+\.\S+/.test(formData.email)) return false;
-    if (formData.password.length < 8) return false;
-    return true;
+    return (
+      formData.fullName &&
+      formData.email &&
+      /\S+@\S+\.\S+/.test(formData.email) &&
+      formData.password.length >= 8 &&
+      /^[0-9]{10}$/.test(formData.phoneNumber) &&
+      formData.address
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
-    const response = await dispatch(registerUser(formData));
-    if (response.meta.requestStatus === "fulfilled") {
-      alert("Registered");
-      navigate("/login");
+    if (!validateForm()) {
+      toast.error("Please fix the errors before submitting");
+      return;
+    }
+
+    try {
+      const response = await dispatch(registerUser(formData));
+
+      if (response.meta.requestStatus === "fulfilled") {
+        toast.success("Registered successfully!");
+        navigate("/login");
+      }
+    } catch (err) {
+      toast.error(err);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message || error || "Registration failed");
+      dispatch(resetError());
+    }
+  }, [error,dispatch]);
 
   return (
     <div className="register-container">
       <div className="register-overall">
         <h2>Register</h2>
         <form className="register-form" onSubmit={handleSubmit}>
-          <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} required />
-          <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-          <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-          <input type="text" name="phoneNumber" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleChange} required />
-          <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+          {["fullName","email","password","phoneNumber","address"].map((field) => (
+            <div className="input-group" key={field}>
+              <input
+                type={field === "password" ? "password" : "text"}
+                name={field}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                value={formData[field]}
+                onChange={handleChange}
+                required
+              />
+              {errors[field] && <span className="error">{errors[field]}</span>}
+            </div>
+          ))}
+
           <button type="submit" disabled={isLoading}>
             {isLoading ? "Registering..." : "Register"}
           </button>
         </form>
+
         <p className="login-link">
           Already have an account? <span onClick={() => navigate("/login")}>Login</span>
         </p>

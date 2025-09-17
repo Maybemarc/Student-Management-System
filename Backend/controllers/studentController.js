@@ -58,6 +58,11 @@ export const createStudent = async (req, res) => {
       });
     }
 
+    const rollNumberExist = await Student.findOne({rollNumber})
+    if(rollNumberExist){
+      return res.status(400).json({message: "Roll number already exists" })
+    }
+
     let photoUrl = "";
     if (!req.file) {
       return res.status(400).json({
@@ -231,8 +236,8 @@ export const getStudentSUmmary = async (req, res) => {
       },
     ]);
 
-    const labels = summary.map((item) => item._id);
-    const counts = summary.map((item) => item.count);
+   const labels = summary.length ? summary.map((item) => item._id) : [];
+    const counts = summary.length ? summary.map((item) => item.count) : [];
 
     res.status(200).json({ labels, counts, summary });
   } catch (error) {

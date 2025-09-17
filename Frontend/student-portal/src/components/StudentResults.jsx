@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function StudentResults({students,onDelete}) {
+function StudentResults({students}) {
   const navigate =useNavigate()
 
   if (!Array.isArray(students) || students.length === 0) return <div>No results found.</div>;
@@ -17,20 +17,12 @@ function StudentResults({students,onDelete}) {
                 className="student-photo"
               />
             )}
-            <div>
+            <div className="student-content" >
               <h3>{student.fullName}</h3>
-              <p>Email: {student.email}</p>
-              <p>Class: {student.studentClass}</p>
-              <p>Roll Number: {student.rollNumber}</p>
+              <p> <strong> Email: </strong>{student.email}</p>
+              <p> <strong> Class: </strong>{student.studentClass}</p>
+              <p> <strong> Roll Number: </strong>{student.rollNumber}</p>
             </div>
-          </div>
-          <div className="student-actions">
-            <Link to={`/update-student/${student._id}`}>
-              <button className="update-btn">Update</button>
-            </Link>
-            <button className="delete-btn" onClick={() => onDelete(student._id)}>
-              Delete
-            </button>
           </div>
         </div>
       ))}
