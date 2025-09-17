@@ -39,7 +39,6 @@ export const logoutUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       await axios.post("/auth/logout");
-      Cookies.remove("user")
       alert("Loggged out")
       return null
     } catch (error) {

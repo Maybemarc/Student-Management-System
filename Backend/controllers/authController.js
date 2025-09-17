@@ -9,7 +9,7 @@ dotenv.config();
 
 export const registerUser = async (req, res) => {
   try {
-    const { fullName, email, password, phoneNumber, address,isAdmin } =
+    const { fullName, email, password, phoneNumber, address, isAdmin } =
       req.body;
 
     if (!fullName || !email || !password || !phoneNumber || !address) {
@@ -29,7 +29,7 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
       phoneNumber,
       address,
-      isAdmin:isAdmin || true,
+      isAdmin: isAdmin || true,
     });
 
     await newUser.save();
@@ -94,7 +94,11 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
   res.status(200).json({ message: "Logged Out Successfully" });
 };
 
